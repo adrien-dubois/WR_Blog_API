@@ -64,7 +64,6 @@ class RegisterController extends AbstractController
         $em->flush();
 
         $email = (new TemplatedEmail())
-                ->from('admin@white-umbrella.fr')
                 ->to($user->getEmail())
                 ->subject("Validation de votre inscription sur White Rabbit's Blog")
                 ->htmlTemplate('emails/confirmation.html.twig')
