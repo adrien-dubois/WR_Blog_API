@@ -3,6 +3,8 @@
 namespace App\Controller\Api\V1;
 
 use App\Entity\User;
+use App\Form\OtpType;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,16 +16,14 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-/**
- * @Route("/api/v1/register", name="register_")
- */
+
 class RegisterController extends AbstractController
 {
 
     /**
      * Method to register a new user
      * 
-     * @Route("/", name="user", methods={"POST"})
+     * @Route("/api/v1/register/", name="register_user", methods={"POST"})
      *
      * @param Request $request
      * @param UserPasswordHasherInterface $hasher
@@ -74,14 +74,44 @@ class RegisterController extends AbstractController
         return $this->json($user, 201);
     }
 
+
     /**
-     * Undocumented function
      * 
-     * @Route("/activation", name="activation", methods={"POST"})
+     * Method to activate an user after registration, by email
+     * 
+     * @Route("/activation/{activationToken}", name="register_activation")
      *
+     * @param String $token
+     * @param UserRepository $repository
+     * @param Request $request
+     * @param EntityManagerInterface $em
      * @return void
      */
-    public function activation(){
+    public function activation($activationToken, UserRepository $repository, Request $request, EntityManagerInterface $em){
 
+        $form = $this->createForm(OtpType::class);
+        $content = $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()){
+
+            $otp = $content->get('otp')->getData();
+
+            /** @var User $user */
+            $user = $repository->findOtp($otp, $activationToken);
+
+            if(!$user){
+                throw $this->createNotFoundException('Le numéro d\'activation est invalide');
+            }
+
+            $user->setIsActive(true);
+            $em->flush();
+
+            return $this->redirectToRoute('app_login');
+            // return $this->redirect('', 301);
+        }
+
+        return $this->render('security/activation.html.twig',[
+            'formView' => $form->createView()
+        ]);
     }
 }

@@ -26,10 +26,10 @@ class AuthenticationSuccessHandler implements AuthenticationSuccessHandlerInterf
         $id = $user->getUserIdentifier();
         $find = $this->repository->findOneBy(['email' => $id]);
 
-        $activate = $find->getActivationToken();
+        $activate = $find->getIsActive();
 
         // $user = $token->getUser();
-        if ($activate) {
+        if ($activate === false) {
 
             return new JsonResponse('E-Mail non vérifié', Response::HTTP_FORBIDDEN);
         }
