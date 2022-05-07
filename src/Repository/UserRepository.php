@@ -67,12 +67,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findOtp($otp, $token){
         return $this->createQueryBuilder('u')
                     ->select('u')
-                    ->andWhere('u.activationToken LIKE :activationToken')
+                    ->andWhere('u.activation_token LIKE :activationToken')
                     ->setParameter(':activationToken', "%$token%")
                     ->andWhere('u.otp LIKE :otp')
                     ->setParameter(':otp', "%$otp%")
                     ->getQuery()
-                    ->getResult();
+                    ->getSingleResult();
     }
 
 //    /**

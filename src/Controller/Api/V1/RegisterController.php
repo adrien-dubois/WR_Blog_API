@@ -103,6 +103,7 @@ class RegisterController extends AbstractController
                 throw $this->createNotFoundException('Le numéro d\'activation est invalide');
             }
 
+            // dd($user);
             $user->setIsActive(true);
             $em->flush();
 
