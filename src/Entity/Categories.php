@@ -6,6 +6,7 @@ use App\Repository\CategoriesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CategoriesRepository::class)
@@ -21,11 +22,13 @@ class Categories
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"post"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"post"})
      */
     private $description;
 
@@ -47,6 +50,7 @@ class Categories
     public function __construct()
     {
         $this->posts = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int

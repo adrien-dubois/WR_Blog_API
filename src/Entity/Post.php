@@ -6,9 +6,13 @@ use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=PostRepository::class)
+ * @Vich\Uploadable
  */
 class Post
 {
@@ -16,56 +20,80 @@ class Post
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"post"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"post"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"post"})
      */
     private $text;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\File(
+     *      maxSize = "1M",
+     *      maxSizeMessage = "Taille maximale autorisée : {{ limit }} {{ suffix }}.",
+     *      mimeTypes = {"image/png", "image/jpg", "image/jpeg"},
+     *      mimeTypesMessage = "Formats autorisés : png, jpg, jpeg."
+     * )
+     * @Vich\UploadableField(mapping="product_image", fileNameProperty="picture")
+     *
+     * @var File|null
+     */
+    private $imageFile;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     * @Groups({"post"})
      */
     private $picture;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"post"})
      */
     private $links;
 
     /**
      * @ORM\Column(type="datetime_immutable")
+     * @Groups({"post"})
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @Groups({"post"})
      */
     private $updatedAt;
 
     /**
      * @ORM\ManyToMany(targetEntity=Tag::class, mappedBy="post")
+     * @Groups({"post"})
      */
     private $tags;
 
     /**
      * @ORM\ManyToMany(targetEntity=Categories::class, inversedBy="posts")
+     * @Groups({"post"})
      */
     private $categories;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="post")
+     * @Groups({"post"})
      */
     private $comment;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="posts")
+     * @Groups({"post"})
      */
     private $user;
 
@@ -74,6 +102,7 @@ class Post
         $this->tags = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->comment = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -244,5 +273,33 @@ class Post
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * Get the value of imageFile
+     *
+     * @return  File|null
+     */
+    public function getImageFile()
+    {
+        return $this->imageFile;
+    }
+
+    /**
+     * Set the value of imageFile
+     *
+     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $imageFile 
+     *
+     * 
+     */
+    public function setImageFile($imageFile)
+    {
+        $this->imageFile = $imageFile;
+
+        if (null !== $imageFile) {
+             // Il est nécessaire qu'au moins un champ change si vous utilisez doctrine 
+            // sinon les écouteurs d'événement ne seront pas appelés et le fichier est perdu 
+            $this->updatedAt = new \DateTimeImmutable();
+        }
     }
 }
