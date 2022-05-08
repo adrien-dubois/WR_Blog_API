@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -178,5 +177,34 @@ class PostController extends AbstractController
         return $this->json(["message" => "L'article a bien été modifié"], 200, [], [
             'groups' => 'post'
         ]);
+    }
+
+
+    /**
+     * Remove an article by its ID only by its author
+     * 
+     * @Route("/{id}", name="delete", methods={"DELETE"})
+     *
+     * @param Post $post
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    public function delete(Post $post, EntityManagerInterface $em): JsonResponse
+    {
+        // This protection will check by the voter if we are allowed to delete this article
+        $this->denyAccessUnlessGranted('delete', $post, "Seul l'auteur de cet article peut le supprimer.");
+
+        if(!$post){
+            return $this->json([
+                'error' => 'Cet article n\'existe pas.'
+            ], 404);
+        }
+
+        $em->remove($post);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'L\'article a bien été supprimé'
+        ], 200);
     }
 }
