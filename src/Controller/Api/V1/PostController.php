@@ -102,14 +102,14 @@ class PostController extends AbstractController
         /** @var Post $post */
         $post = $serializer->deserialize($jsonData, Post::class, 'json');
 
-        // We validate the datas stucked in $announce on criterias of annotations' Entity @assert
+        // We validate the datas stucked in $post on criterias of annotations' Entity @assert
         $errors = $validator->validate($post);
 
         // If the errors array is not empty, we return an error code 400 that is a Bad Request
         if (count($errors) > 0) {
             return $this->json($errors, 400);
         }
-        // get the user teacher which is posting an announce for the voter, to check if we are the creator of it
+        // get the user which is posting an article for the voter, to check if we are the creator of it
         $user = $this->security->getUser();
         $post->setUser($user);
 

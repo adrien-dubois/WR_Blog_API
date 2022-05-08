@@ -20,13 +20,13 @@ class Post
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"post"})
+     * @Groups({"post", "comment"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"post"})
+     * @Groups({"post", "comment"})
      */
     private $title;
 
@@ -89,7 +89,7 @@ class Post
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="post")
      * @Groups({"post"})
      */
-    private $comment;
+    private $comments;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="posts")
@@ -101,8 +101,16 @@ class Post
     {
         $this->tags = new ArrayCollection();
         $this->categories = new ArrayCollection();
-        $this->comment = new ArrayCollection();
+        $this->comments = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function __toString()
+    {
+        if(is_null($this->title)){
+            return 'NULL';
+        }
+        return $this->title;
     }
 
     public function getId(): ?int
@@ -236,15 +244,15 @@ class Post
     /**
      * @return Collection<int, Comment>
      */
-    public function getComment(): Collection
+    public function getComments(): Collection
     {
-        return $this->comment;
+        return $this->comments;
     }
 
     public function addComment(Comment $comment): self
     {
-        if (!$this->comment->contains($comment)) {
-            $this->comment[] = $comment;
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
             $comment->setPost($this);
         }
 
@@ -253,7 +261,7 @@ class Post
 
     public function removeComment(Comment $comment): self
     {
-        if ($this->comment->removeElement($comment)) {
+        if ($this->comments->removeElement($comment)) {
             // set the owning side to null (unless already changed)
             if ($comment->getPost() === $this) {
                 $comment->setPost(null);

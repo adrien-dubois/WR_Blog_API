@@ -2,13 +2,13 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\Post;
+use App\Entity\Comment;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class PostVoter extends Voter
+class CommentVoter extends Voter
 {
     private $security;
 
@@ -24,9 +24,8 @@ class PostVoter extends Voter
 
     protected function supports(string $attribute, $subject): bool
     {
-
         return in_array($attribute, [self::EDIT, self::DELETE])
-            && $subject instanceof \App\Entity\Post;
+            && $subject instanceof \App\Entity\Comment;
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
@@ -42,34 +41,34 @@ class PostVoter extends Voter
             return true;
         }
 
-        /** @var Post $post */
-        $post = $subject;
+        /** @var Comment $comment */
+        $comment = $subject;
 
-        // check if the post has a creator
-        if(null === $post->getUser()) return false;
+        // check if the comment has a creator
+        if(null === $comment->getUser()) return false;
 
         // ... (check conditions and return true to grant permission) ...
         switch ($attribute) {
             case self::EDIT:
-                return $this->canEdit($post, $user);
+                return $this->canEdit($comment, $user);
                 break;
             case self::DELETE:
-                return $this->canDelete($post, $user);
+                return $this->canDelete($comment, $user);
                 break;
         }
 
         return false;
     }
 
-    // Check if we are the owner of the announce
+    // Check if we are the owner of the comment
     // If true, we can edit or delete it
 
-    private function canEdit(Post $post, $user)
+    private function canEdit(Comment $comment, $user)
     {
-        return $user === $post->getUser();
+        return $user === $comment->getUser();
     }
-    private function canDelete(Post $post, $user)
+    private function canDelete(Comment $comment, $user)
     {
-        return $user === $post->getUser();
+        return $user === $comment->getUser();
     }
 }
