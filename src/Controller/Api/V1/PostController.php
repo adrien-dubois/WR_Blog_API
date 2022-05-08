@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -20,6 +22,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class PostController extends AbstractController
 {
+
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
 
     /**
      * Method to get all the posts
@@ -101,6 +110,9 @@ class PostController extends AbstractController
         if (count($errors) > 0) {
             return $this->json($errors, 400);
         }
+        // get the user teacher which is posting an announce for the voter, to check if we are the creator of it
+        $user = $this->security->getUser();
+        $post->setUser($user);
 
         // Decode the json request to get the image part into an array
         $data = json_decode($request->getContent(), true);
@@ -118,6 +130,52 @@ class PostController extends AbstractController
         $em->flush();
 
         return $this->json($post, 201, [], [
+            'groups' => 'post'
+        ]);
+    }
+
+    /**
+     * Update an article by its ID only if it's the creator
+     * 
+     * @Route("/{id}", name="update", methods={"PUT","PATCH"})
+     *
+     * @param Post $post
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    public function update(Post $post, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        // This method will allows to access to the update method, with the voter logic
+        $this->denyAccessUnlessGranted('edit', $post, "Seul l'auteur de cet article peut le modifier.");
+
+        $jsonData = $request->getContent();
+
+        if(!$post){
+            return $this->json([
+                'errors' => ['message'=>'Cet article n\'existe pas']
+            ], 404
+            );
+        }
+
+        $serializer->deserialize($jsonData, Post::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE=>$post]);
+
+        // Decode the json request to get the image part into an array
+        $data = json_decode($request->getContent(), true);
+        if(isset($data['pictures'])) {
+            // Send it to the Uploader service to cut the code, get a uniq name 
+            $imageFile = new UploadedBase64File($data['pictures']['value'], $data['pictures']['name']);
+            // create a form dedicated to pictures
+            $form =$this->createForm(ImageType::class, $post,['csrf_protection' => false]);
+            //Submit form and set pic
+            $form->submit(['imageFile' => $imageFile]);
+            $post->setPicture($imageFile);
+        }
+
+        $em->flush();
+
+        return $this->json(["message" => "L'article a bien été modifié"], 200, [], [
             'groups' => 'post'
         ]);
     }
