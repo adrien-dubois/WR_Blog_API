@@ -12,7 +12,7 @@ security:
                 property: email
     firewalls:
         login:
-            pattern: ~/api/login
+            pattern: ^/api/login
             stateless: true
             json_login:
                 check_path: /api/login_check # or api_login_check as defined in config/routes.yaml
@@ -23,7 +23,7 @@ security:
             security: false
         
         api:
-            pattern:   ~/api
+            pattern:   ^/api
             stateless: true
             guard:
                 authenticators:
