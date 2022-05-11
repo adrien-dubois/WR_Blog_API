@@ -46,12 +46,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $firstname;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"post", "comment"})
-     */
-    private $lastname;
-
-    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $picture;
@@ -204,18 +198,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstname(string $firstname): self
     {
         $this->firstname = $firstname;
-
-        return $this;
-    }
-
-    public function getLastname(): ?string
-    {
-        return $this->lastname;
-    }
-
-    public function setLastname(string $lastname): self
-    {
-        $this->lastname = $lastname;
 
         return $this;
     }
