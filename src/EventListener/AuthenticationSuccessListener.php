@@ -43,15 +43,17 @@ class AuthenticationSuccessListener{
 
         }
 
-        $firstname = $find->getFirstname();
+        $name = $find->getName();
         $id = $find->getId();
         $role = $find->getRoles();
         $mail = $find->getEmail();
+        $picture = $find->getPicture();
 
         $data['data'] = array(
             'id' => $id,
             'email' => $mail,
-            'name' => $firstname,
+            'name' => $name,
+            'picture' => $picture,
             'roles' => $role
         );
 
