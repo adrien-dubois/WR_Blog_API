@@ -85,6 +85,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $otp;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Todoline::class, mappedBy="user")
+     */
+    private $todolines;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -92,6 +97,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isActive = false;
         $this->createdAt = new \DateTimeImmutable();
         $this->roles = array ('ROLE_USER');
+        $this->todolines = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -330,6 +336,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOtp(string $otp): self
     {
         $this->otp = $otp;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Todoline>
+     */
+    public function getTodolines(): Collection
+    {
+        return $this->todolines;
+    }
+
+    public function addTodoline(Todoline $todoline): self
+    {
+        if (!$this->todolines->contains($todoline)) {
+            $this->todolines[] = $todoline;
+            $todoline->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTodoline(Todoline $todoline): self
+    {
+        if ($this->todolines->removeElement($todoline)) {
+            // set the owning side to null (unless already changed)
+            if ($todoline->getUser() === $this) {
+                $todoline->setUser(null);
+            }
+        }
 
         return $this;
     }
