@@ -51,6 +51,7 @@ class Todoline
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="todolines")
+     * @Groups({"todoline"})
      */
     private $user;
 

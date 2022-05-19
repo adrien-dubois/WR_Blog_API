@@ -41,7 +41,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"post", "comment"})
+     * @Groups({"post", "comment", "todoline"})
      */
     private $name;
 

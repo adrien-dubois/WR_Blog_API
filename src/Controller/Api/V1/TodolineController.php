@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -51,6 +52,33 @@ class TodolineController extends AbstractController
     }
 
     /**
+     * Method to take just one todo by it ID
+     * 
+     * @Route("/{id}", name="findid", methods={"GET"})
+     *
+     * @param integer $id
+     * @param TodolineRepository $repository
+     * @return JsonResponse
+     */
+    public function findId(int $id, TodolineRepository $repository): JsonResponse
+    {
+        $todoline = $repository->find($id);
+
+        $this->denyAccessUnlessGranted('read', $todoline, "Seul le créateur de cette todolist peut y accéder");
+
+        if(!$todoline){
+            return $this->json([
+                'error' => "Cette tâche n'existe pas."
+            ], 404
+        );
+        }
+
+        return $this->json($todoline, 200, [], [
+            'groups' => 'todoline'
+        ]);
+    }
+
+    /**
      *
      * @Route("/", name="add", methods={"POST"})
      *
@@ -81,5 +109,66 @@ class TodolineController extends AbstractController
         return $this->json($todoline, 201, [], [
             'groups' => 'todoline'
         ]);
+    }
+
+    /**
+     * Method tu update a task
+     * 
+     * @Route("/{id}", name={update}, methods={"PUT", "PATCH"})
+     *
+     * @param Request $request
+     * @param Todoline $todoline
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    public function update(Request $request, Todoline $todoline, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('edit', $todoline, "Seul le créteur de cette todolist peut y accéder.");
+
+        $jsonData = $request->getContent();
+
+        if(!$todoline) {
+            return $this->json([
+                'errors' => ['message' => 'Seul le créateur de cette todolist peut y accéder']
+            ], 404);
+        }
+
+        $serializer->deserialize($jsonData, Todoline::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $todoline]);
+
+        $em->flush();
+
+        return $this->json(["message" => "La tâche a bien été modifiée"], 200, [], [
+            'groups' => 'todoline'
+        ]);
+    }
+
+    /**
+     * Method to delete one task
+     * 
+     * @Route("/{id}", name="delete", METHODS={"DELETE"})
+     *
+     * @param Todoline $todoline
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
+    public function delete(Todoline $todoline, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('delete', $todoline, "Seul l'auteur de cette tâche peut la supprimer.");
+
+        if (!$todoline) {
+            return $this->json([
+                'error' => "Cette tâche n'existe pas."
+            ], 404);
+        }
+
+
+        $em->remove($todoline);
+        $em->flush();
+
+        return $this->json([
+        'message' => 'La tâche a bien été supprimée'
+    ], 200);
+
     }
 }
