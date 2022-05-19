@@ -64,14 +64,15 @@ class TodolineController extends AbstractController
     {
         $todoline = $repository->find($id);
 
-        $this->denyAccessUnlessGranted('read', $todoline, "Seul le créateur de cette todolist peut y accéder");
-
         if(!$todoline){
             return $this->json([
                 'error' => "Cette tâche n'existe pas."
             ], 404
         );
         }
+        
+        $this->denyAccessUnlessGranted('read', $todoline, "Seul le créateur de cette todolist peut y accéder");
+
 
         return $this->json($todoline, 200, [], [
             'groups' => 'todoline'
@@ -114,7 +115,7 @@ class TodolineController extends AbstractController
     /**
      * Method tu update a task
      * 
-     * @Route("/{id}", name={update}, methods={"PUT", "PATCH"})
+     * @Route("/{id}", name="update", methods={"PUT", "PATCH"})
      *
      * @param Request $request
      * @param Todoline $todoline
@@ -146,7 +147,7 @@ class TodolineController extends AbstractController
     /**
      * Method to delete one task
      * 
-     * @Route("/{id}", name="delete", METHODS={"DELETE"})
+     * @Route("/{id}", name="delete", methods={"DELETE"})
      *
      * @param Todoline $todoline
      * @param EntityManagerInterface $em
