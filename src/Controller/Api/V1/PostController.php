@@ -115,10 +115,10 @@ class PostController extends AbstractController
 
         // Decode the json request to get the image part into an array
         $data = json_decode($request->getContent(), true);
-        if(isset($data['pictures'])) {
+        if(isset($data['picture'])) {
             // Send it to the Uploader service to cut the code, get a uniq name 
-            $imageFile = new UploadedBase64File($data['pictures']['value'], $data['pictures']['name']);
-            // create a form dedicated to pictures
+            $imageFile = new UploadedBase64File($data['picture']['base64'], $data['picture']['name']);
+            // create a form dedicated to picture
             $form =$this->createForm(ImageType::class, $post,['csrf_protection' => false]);
             //Submit form and set pic
             $form->submit(['imageFile' => $imageFile]);
@@ -162,10 +162,10 @@ class PostController extends AbstractController
 
         // Decode the json request to get the image part into an array
         $data = json_decode($request->getContent(), true);
-        if(isset($data['pictures'])) {
+        if(isset($data['picture'])) {
             // Send it to the Uploader service to cut the code, get a uniq name 
-            $imageFile = new UploadedBase64File($data['pictures']['value'], $data['pictures']['name']);
-            // create a form dedicated to pictures
+            $imageFile = new UploadedBase64File($data['picture']['base64'], $data['picture']['name']);
+            // create a form dedicated to picture
             $form =$this->createForm(ImageType::class, $post,['csrf_protection' => false]);
             //Submit form and set pic
             $form->submit(['imageFile' => $imageFile]);

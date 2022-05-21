@@ -56,6 +56,13 @@ class RegisterController extends AbstractController
         $user->setActivationToken(md5(uniqid()));
         $user->setOtp($otp);
 
+        $dataPicture = json_decode($request->getContent(), true);
+        if(isset($dataPicture['image'])){
+            $imageFile = $dataPicture['image']['base64'];
+            $user->setPicture($imageFile);
+        }
+
+
         if(count($errors) > 0) {
             return $this->json($errors, 400);
         }
