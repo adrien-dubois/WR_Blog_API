@@ -43,6 +43,14 @@ class RegisterController extends AbstractController
         $errors = $validator->validate($user);
 
         $password = $user->getPassword();
+        $confirmPassword = $user->getConfirmPassword();
+
+        if($password != $confirmPassword){
+            return $this->json([
+                'message' => "Les mots de passe ne sont pas identiques"
+            ], 400
+            );
+        }
 
         $user->setPassword(
             $hasher->hashPassword(
@@ -57,7 +65,7 @@ class RegisterController extends AbstractController
         $user->setOtp($otp);
 
         $dataPicture = json_decode($request->getContent(), true);
-        if(isset($dataPicture['image'])){
+        if(isset($dataPicture['image']['base64'])){
             $imageFile = $dataPicture['image']['base64'];
             $user->setPicture($imageFile);
         }
